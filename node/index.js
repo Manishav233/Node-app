@@ -9,7 +9,7 @@ dotenv.config(); //put all keys in process.env
 console.log(process.env);
 
 const app=express();
-const PORT=9000;
+const PORT=process.env.PORT; //heroku will auto assign available port
 app.use(express.json());
 //express.json() -inbuilt middleware-tarnsforms body data to json, it converts every request in app
 

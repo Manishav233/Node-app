@@ -2,6 +2,11 @@
 //const express=require("express");
 import express from "express";
 import {MongoClient} from "mongodb";
+import dotenv from "dotenv";
+
+dotenv.config(); //put all keys in process.env
+console.log(process.env);
+
 const app=express();
 const PORT=9000;
 app.use(express.json());
@@ -83,7 +88,9 @@ const movies = [
     language: "English",
   },
 ];
-const MONGO_URL="mongodb://localhost";
+const MONGO_URL=process.env.MONGO_URL;
+
+//const MONGO_URL="mongodb+srv://manisha:<password>@cluster0.s0ld7.mongodb.net";/myFirstDatabase?retryWrites=true&w=majority
 
 async function createConnection(){
 const client=new MongoClient(MONGO_URL);
@@ -117,7 +124,7 @@ app.get("/movies",async(request,response)=>{
     // {
     //  FilterMovie=FilterMovie.filter((mv)=>mv.rating===+rating);
     // }
-    const FilterMovie=await client.db("b28wd").collection("movies").find(filter).toArray();
+    const FilterMovie=await getMovies(filter);
     
 response.send(FilterMovie);
 console.log(FilterMovie);
@@ -126,7 +133,7 @@ console.log(FilterMovie);
 app.post("/movies",async(request,response)=>{
 const data=request.body;
 
-const result=await client.db("b28wd").collection("movies").insertMany(data);
+const result=await createMovies(data);
 //console.log(result);
 response.send(result);
 });
@@ -136,7 +143,7 @@ console.log(request.params);
 
 const {id}=request.params;
 
-const movie=await client.db("b28wd").collection("movies").findOne({id:id});
+const movie=await getMovieById(id);
     // const movie = movies.find((mv) => mv.id===id);
      console.log(movie);
      
@@ -145,5 +152,49 @@ const movie=await client.db("b28wd").collection("movies").findOne({id:id});
         : response.status(404).send({message:"No matching movie found"});
        });
        
+ app.delete("/movies/:id",async(request,response)=>{
+console.log(request.params);
+        
+        const {id}=request.params;
+        
+        const result=await deleteMovieById(id);
+            // const movie = movies.find((mv) => mv.id===id);
+             console.log(result);
+console.log(result.deletedCount);
+            result.deletedCount>0
+               ?response.send(result)
+                :response.status(404).send({message:"No matching movie found"});
+               });
+               
+app.put("/movies/:id",async(request,response)=>{
+console.log(request.params);
+const {id}=request.params;
+const data=request.body;
+const result=await updateMovieById(id, data);
+const movie=await getMovieById(id);
+  // const movie = movies.find((mv) => mv.id===id);
+  //console.log(result);
+  response.send(movie);               
+});
      
 app.listen(PORT,()=>console.log("app started at",PORT));
+
+async function updateMovieById(id, data) {
+  return await client.db("b28wd").collection("movies").updateOne({ id: id }, { $set: data });
+}
+
+async function createMovies(data) {
+  return await client.db("b28wd").collection("movies").insertMany(data);
+}
+
+async function getMovies(filter) {
+  return await client.db("b28wd").collection("movies").find(filter).toArray();
+}
+
+async function deleteMovieById(id) {
+  return await client.db("b28wd").collection("movies").deleteOne({ id: id });
+}
+
+async function getMovieById(id) {
+  return await client.db("b28wd").collection("movies").findOne({ id: id });
+}

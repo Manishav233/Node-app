@@ -10,19 +10,8 @@ import{
   } from "../helper.js";
 
 // .. because we need to go one folder up to ftech data from helper.js
-router.get("/",async(request,response)=>{
-    console.log(request.query);
-    // const {language,rating}=request.query;
-    const filter=request.query;
-    console.log(filter);
-    if(filter.rating){
-    filter.rating=+filter.rating;
-    }
-    const FilterMovie=await getMovies(filter);
-    response.send(FilterMovie);
-    console.log(FilterMovie);
-    });
-        //we change app.get......... to router.get.....
+
+//we change app.get......... to router.get.....
         // console.log(language,rating);
         
         // let FilterMovie=movies;
@@ -35,17 +24,32 @@ router.get("/",async(request,response)=>{
         //  FilterMovie=FilterMovie.filter((mv)=>mv.rating===+rating);
         // }
         
-    
-    
-    
-    router.post("/",async(request,response)=>{
+        
+    router
+    .route("/")
+    .get(async(request,response)=>{
+    console.log(request.query);
+    // const {language,rating}=request.query;
+    const filter=request.query;
+    console.log(filter);
+    if(filter.rating){
+    filter.rating=+filter.rating;
+    }
+    const FilterMovie=await getMovies(filter);
+    response.send(FilterMovie);
+    console.log(FilterMovie);
+    })
+        
+    .post(async(request,response)=>{
     const data=request.body;
     const result=await createMovies(data);
     //console.log(result);
     response.send(result);
     });
     
-    router.get("/:id",async(request,response)=>{
+    router
+    .route("/:id")
+    .get(async(request,response)=>{
     console.log(request.params);
     const {id}=request.params;
     const movie=await getMovieById(id);
@@ -54,10 +58,9 @@ router.get("/",async(request,response)=>{
     movie?
     response.send(movie)
     : response.status(404).send({message:"No matching movie found"});
-    });
-           
-           
-    router.delete("/:id",async(request,response)=>{
+    })
+                 
+    .delete(async(request,response)=>{
     console.log(request.params);
     const {id}=request.params;
     const result=await deleteMovieById(id);
@@ -67,10 +70,9 @@ router.get("/",async(request,response)=>{
     result.deletedCount>0
     ?response.send(result)
     :response.status(404).send({message:"No matching movie found"});
-    });
+    })
                    
-                   
-    router.put("/:id",async(request,response)=>{
+    .put(async(request,response)=>{
     console.log(request.params);
     const {id}=request.params;
     const data=request.body;
@@ -80,5 +82,6 @@ router.get("/",async(request,response)=>{
     //console.log(result);
     response.send(movie);               
     });
+    
     
     export const moviesRouter=router;
